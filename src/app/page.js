@@ -2,18 +2,13 @@
 
 import * as React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
-import { Button, Box, AppBar, Toolbar, Snackbar, Alert as MuiAlert } from '@mui/material';
+import { Button, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
 import theme from './theme';
 import { FaBars } from 'react-icons/fa';
-
-const Alert = React.forwardRef((props, ref) => {
-  return <MuiAlert {...props} ref={ref} variant="filled" />;
-});
+import Link from 'next/link';
 
 export default function App() {
-  const [open, setOpen] = React.useState(false);
-
-  const alertRef = React.useRef(null);
+  const [tabCurrentIndex, setTabCurrentIndex] = React.useState(0);
 
   return (
     <>
@@ -21,7 +16,7 @@ export default function App() {
         <AppBar position="fixed">
           <Toolbar>
             <div className="tw-flex-1">
-              <FaBars className="tw-cursor-pointer" />
+              <FaBars onClick={() => setOpen(true)} className="tw-cursor-pointer" />
             </div>
             <div className="logo-box">
               <a href="/" className="tw-font-bold">
@@ -38,22 +33,14 @@ export default function App() {
           section
         </section>
       </ThemeProvider>
-      <section>
-        <Button onClick={() => setOpen(true)}>Open Snackbar</Button>
-        <Alert ref={alertRef} severity="error" varient="filled">
-          게시물이 삭제되었습니다.
-        </Alert>
-        <Alert severity="success" varient="outlined">
-          This is a success msg!!!!!
-        </Alert>
-        <Snackbar
-          open={open}
-          autoHideDuration={2000}
-          onClose={() => setOpen(false)}
-          message="Note archived">
-          <Alert severity="warning">게시물이 삭제됨</Alert>
-        </Snackbar>
-      </section>
+      <Tabs value={tabCurrentIndex} onChange={(_, newValue) => setTabCurrentIndex(newValue)}>
+        <Tab label="Item One" />
+        <Tab label="Item Two" />
+        <Tab label="Item Three" />
+      </Tabs>
+      {tabCurrentIndex == 0 && <div>내용1</div>}
+      {tabCurrentIndex == 1 && <div>내용2</div>}
+      {tabCurrentIndex == 2 && <div>내용3</div>}
     </>
   );
 }
