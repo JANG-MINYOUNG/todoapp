@@ -264,7 +264,7 @@ function EditTodoModal({ status, todosState, todo }) {
   );
 }
 
-function TodoOptionDrawer({ status, todosState }) {
+function TodoOptionDrawer({ status, todosState, openSnackbar }) {
   const removeTodo = () => {
     if (confirm(`${status.todoId}번 할 일을 삭제하시겠습니까?`) == false) {
       status.close();
@@ -272,6 +272,7 @@ function TodoOptionDrawer({ status, todosState }) {
     }
 
     todosState.removeTodo(status.todoId);
+    openSnackbar(true);
     status.close();
   };
 
@@ -309,10 +310,28 @@ function TodoOptionDrawer({ status, todosState }) {
 
 const TodoList = ({ todosState }) => {
   const todoOptionDrawerStatus = useTodoOptionDrawerStatus();
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+
+  const openSnackbar = () => {
+    setSnackbarOpen(true);
+  };
+
+  const closeSnackbar = () => {
+    setSnackbarOpen(false);
+  };
 
   return (
     <>
-      <TodoOptionDrawer status={todoOptionDrawerStatus} todosState={todosState} />
+      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={closeSnackbar}>
+        <Alert variant="filled" severity="success" onClose={closeSnackbar}>
+          할 일이 삭제되었습니다.
+        </Alert>
+      </Snackbar>
+      <TodoOptionDrawer
+        status={todoOptionDrawerStatus}
+        todosState={todosState}
+        openSnackbar={openSnackbar}
+      />
       <nav>
         할 일 갯수 : {todosState.todos.length}
         <ul>
@@ -334,8 +353,6 @@ const TodoList = ({ todosState }) => {
 function App() {
   const todosState = useTodosStatus();
 
-  const [open, setOpen] = React.useState(false);
-
   React.useEffect(() => {
     todosState.addTodo('스쿼트\n런지');
     todosState.addTodo('벤치');
@@ -344,11 +361,6 @@ function App() {
 
   return (
     <>
-      <Snackbar open={open} autoHideDuration={4000} onClose={() => setOpen(false)}>
-        <Alert variant="filled" severity="sucess">
-          게시물 삭제됨
-        </Alert>
-      </Snackbar>
       <AppBar position="fixed">
         <Toolbar>
           <div className="tw-flex-1">
