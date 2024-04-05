@@ -264,7 +264,7 @@ function EditTodoModal({ status, todosState, todo }) {
   );
 }
 
-function TodoOptionDrawer({ status, todosState, openSnackbar }) {
+function TodoOptionDrawer({ status, todosState }) {
   const removeTodo = () => {
     if (confirm(`${status.todoId}번 할 일을 삭제하시겠습니까?`) == false) {
       status.close();
@@ -272,7 +272,6 @@ function TodoOptionDrawer({ status, todosState, openSnackbar }) {
     }
 
     todosState.removeTodo(status.todoId);
-    openSnackbar(true);
     status.close();
   };
 
@@ -310,28 +309,10 @@ function TodoOptionDrawer({ status, todosState, openSnackbar }) {
 
 const TodoList = ({ todosState }) => {
   const todoOptionDrawerStatus = useTodoOptionDrawerStatus();
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-
-  const openSnackbar = () => {
-    setSnackbarOpen(true);
-  };
-
-  const closeSnackbar = () => {
-    setSnackbarOpen(false);
-  };
 
   return (
     <>
-      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={closeSnackbar}>
-        <Alert variant="filled" severity="success" onClose={closeSnackbar}>
-          할 일이 삭제되었습니다.
-        </Alert>
-      </Snackbar>
-      <TodoOptionDrawer
-        status={todoOptionDrawerStatus}
-        todosState={todosState}
-        openSnackbar={openSnackbar}
-      />
+      <TodoOptionDrawer status={todoOptionDrawerStatus} todosState={todosState} />
       <nav>
         할 일 갯수 : {todosState.todos.length}
         <ul>
@@ -350,8 +331,54 @@ const TodoList = ({ todosState }) => {
   );
 };
 
+function NoticeSnackbar({ status }) {
+  return (
+    <>
+      <Snackbar
+        open={status.opened}
+        autoHideDuration={status.autoHideDuration}
+        onClose={status.close}>
+        <Alert variant={status.variant} severity={status.severity}>
+          {status.msg}
+        </Alert>
+      </Snackbar>
+    </>
+  );
+}
+
+function useNoticeSnackbarStatus() {
+  const [opened, setOpened] = React.useState(false);
+  const [autoHideDuration, setAutoHideDuration] = React.useState(null);
+  const [variant, setVariant] = React.useState(null);
+  const [severity, setSeverity] = React.useState(null);
+  const [msg, setMsg] = React.useState(null);
+
+  const open = (msg, severity = 'success', autoHideDuration = 1000, variant = 'filled') => {
+    setOpened(true);
+    setMsg(msg);
+    setSeverity(severity);
+    setAutoHideDuration(autoHideDuration);
+    setVariant(variant);
+  };
+
+  const close = () => {
+    setOpened(false);
+  };
+
+  return {
+    opened,
+    open,
+    close,
+    autoHideDuration,
+    variant,
+    severity,
+    msg,
+  };
+}
+
 function App() {
   const todosState = useTodosStatus();
+  const noticeSnackbarState = useNoticeSnackbarStatus();
 
   React.useEffect(() => {
     todosState.addTodo('스쿼트\n런지');
@@ -361,7 +388,7 @@ function App() {
 
   return (
     <>
-      <AppBar position="fixed">
+      <AppBar position="fixed" onClick={() => noticeSnackbarState.open('abc')}>
         <Toolbar>
           <div className="tw-flex-1">
             <FaBars onClick={() => setOpen(true)} className="tw-cursor-pointer" />
@@ -377,6 +404,7 @@ function App() {
         </Toolbar>
       </AppBar>
       <Toolbar />
+      <NoticeSnackbar status={noticeSnackbarState} />
       <NewTodoForm todosState={todosState} />
       <TodoList todosState={todosState} />
     </>
